@@ -6,6 +6,7 @@ import com.example.application.backend.service.ProductService;
 import com.example.application.backend.service.StockService;
 import com.example.application.backend.service.WarehouseService;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.grid.Grid;
@@ -14,6 +15,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
@@ -123,7 +125,16 @@ public class ProductMasterView extends VerticalLayout {
 
         // Creo y agrego los botones
         Button buttonAddStock = new Button("Add Stock");
+
         Button buttonRefreshStock = new Button("Refresh Stock");
+        buttonRefreshStock.addClickListener(funcion ->{
+            UI.getCurrent().getPage().reload();
+        });
+
+
+
+
+
         buttonRefreshStock.getElement().getStyle().set("margin-left", "auto");
 
         layoutBotones.add(buttonAddStock, buttonRefreshStock);
