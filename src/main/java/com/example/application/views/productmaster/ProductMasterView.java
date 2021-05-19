@@ -1,7 +1,9 @@
 package com.example.application.views.productmaster;
 
 import com.example.application.backend.model.Product;
+import com.example.application.backend.model.Stock;
 import com.example.application.backend.service.ProductService;
+import com.example.application.backend.service.StockService;
 import com.example.application.backend.service.WarehouseService;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.button.Button;
@@ -17,6 +19,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.example.application.views.main.MainView;
 
+import java.util.List;
+
 @Route(value = "productMaster", layout = MainView.class)
 @PageTitle("Product Master")
 public class ProductMasterView extends VerticalLayout {
@@ -24,8 +28,12 @@ public class ProductMasterView extends VerticalLayout {
 
     // Inyecto servicios
     private ProductService productService;
-    private WarehouseService warehouseService;
-    public ProductMasterView(ProductService productService, WarehouseService warehouseService) {
+    private StockService stockService;
+
+    public ProductMasterView(ProductService productService, StockService stockService) {
+        this.productService = productService;
+        this.stockService = stockService;
+
         addClassName("product-master-view");
 
         HorizontalLayout layoutGrid = new HorizontalLayout();
@@ -48,7 +56,7 @@ public class ProductMasterView extends VerticalLayout {
                         product -> {
                             Checkbox checkbox = new Checkbox();
                             checkbox.setValue( product.isActive() );
-                            checkbox.isReadOnly();
+                            checkbox.setEnabled(false);
                             return checkbox;
                         }
                 )
@@ -57,10 +65,11 @@ public class ProductMasterView extends VerticalLayout {
 
         grid.addComponentColumn(item -> createUpdateButton()).setHeader("");
 
-        grid.addComponentColumn(item -> createRemoveButton()).setHeader("");
+        grid.addComponentColumn(product -> createRemoveButton(product)).setHeader("");
 
 
-        add(CreaLayoutHorizBotones(), grid);
+        layoutGrid.add(grid);
+        add(CreaLayoutHorizBotones(), layoutGrid);
 
 
     }
@@ -78,9 +87,23 @@ public class ProductMasterView extends VerticalLayout {
         return button;
     }
 
-    private Button createRemoveButton() {
+    private Button createRemoveButton(Product product) {
 
         Button button = new Button("Remove");
+
+        button.addClickListener(funcion -> {
+            System.out.println("Pulsado botón Remove , product:" + product.getName());
+            List<Stock> listadoStock = product.getStocks();
+
+            for (Stock elementoStock :
+                    listadoStock) {
+                stockService.delete(elementoStock);
+            }
+            product.setStocks(null);
+
+            productService.delete(product);
+
+        });
 
         return button;
     }
