@@ -6,33 +6,27 @@ import com.example.application.backend.model.Warehouse;
 import com.example.application.backend.service.ProductService;
 import com.example.application.backend.service.StockService;
 import com.example.application.backend.service.WarehouseService;
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.formlayout.FormLayout.ResponsiveStep;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.component.select.Select;
-import com.vaadin.flow.component.textfield.BigDecimalField;
+import com.vaadin.flow.component.textfield.NumberField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.textfield.TextFieldVariant;
 import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.BinderValidationStatus;
 import com.vaadin.flow.data.binder.BindingValidationStatus;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.validator.EmailValidator;
-import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
@@ -95,7 +89,7 @@ public class ProductMasterView extends VerticalLayout {
                 )
         ).setHeader("Active").setKey("Active");
 
-        grid.addComponentColumn(item -> createUpdateButton()).setHeader("");
+        grid.addComponentColumn(product -> createUpdateButton(product)).setHeader("");
 
         grid.addComponentColumn(product -> createRemoveButton(product)).setHeader("");
 
@@ -119,7 +113,8 @@ public class ProductMasterView extends VerticalLayout {
 
         buttonAddStock.addClickListener(funcion ->{
 
-            Dialog dialog = formFlotanteProduct();
+            Dialog dialog = formFlotanteProduct(null);
+//            ProductMasterForm dialog = new ProductMasterForm(warehouseService);
             dialog.open();
         });
 
@@ -145,7 +140,7 @@ public class ProductMasterView extends VerticalLayout {
     }
 
 
-    private Dialog formFlotanteProduct(){
+    private Dialog formFlotanteProduct(Product product){
         //////// Creación del DIÁLOGO
 
         // Creo dialog flotante
@@ -158,35 +153,51 @@ public class ProductMasterView extends VerticalLayout {
         Product productBeingEdited = new Product();
 
 
-        // Campo WAREHOUSE
-        Select<Warehouse> warehouseSelect = new Select<>();
-        warehouseSelect.setLabel("Warehouse");
-        warehouseSelect.setItemLabelGenerator(Warehouse::getName);
-        warehouseSelect.setItems(warehouseService.findAll());
+
+            // Campo WAREHOUSE
+        ComboBox<Warehouse> warehouse = new ComboBox<>();
+        warehouse.setLabel("Warehouse");
+        warehouse.setItemLabelGenerator(Warehouse::getName);
+        warehouse.setItems(warehouseService.findAll());
+        if (product != null)  warehouse.setValue(product.getWarehouse());
+
+        // Campo FAMILY
+        ComboBox<Product.Family> family = new ComboBox<>();
+        family.setItems(Product.Family.values());
+        if (product != null) family.setValue(product.getFamily());
+
+            // Campo ACTIVE
+        Checkbox checkboxActive = new Checkbox();
+        if (product != null)  checkboxActive.setValue(product.isActive());
+
 
         // Campo NOMBRE
         TextField name = new TextField();
         name.setValueChangeMode(ValueChangeMode.EAGER);
+        if (product != null) name.setValue(product.getName());
 
-        // Campo DESCRIPTION
+            // Campo DESCRIPTION
         TextField description = new TextField();
         description.setValueChangeMode(ValueChangeMode.EAGER);
+        if (product != null) description.setValue(product.getDescription());
 
-        // Campo PRICE
-
-        BigDecimalField price = new BigDecimalField("Price");
+            // Campo PRICE
+        NumberField price = new NumberField("Price");
         price.setValueChangeMode(ValueChangeMode.EAGER);
         price.addThemeVariants(TextFieldVariant.LUMO_ALIGN_RIGHT);
         price.setPrefixComponent(new Icon(VaadinIcon.EURO));
+        if (product != null) price.setValue(product.getPrice());
 
 
 
-        Label infoLabel = new Label();
+            Label infoLabel = new Label();
         NativeButton save = new NativeButton("Save");
         NativeButton reset = new NativeButton("Reset");
 
 
-        layoutWithBinder.addFormItem(warehouseSelect, "Warehouse");
+        layoutWithBinder.addFormItem(warehouse, "Warehouse");
+        layoutWithBinder.addFormItem(family, "Family");
+        layoutWithBinder.addFormItem(checkboxActive, "Active");
         layoutWithBinder.addFormItem(name, "Name");
         layoutWithBinder.addFormItem(description, "Description");
         layoutWithBinder.addFormItem(price, "Price");
@@ -195,46 +206,38 @@ public class ProductMasterView extends VerticalLayout {
         HorizontalLayout actions = new HorizontalLayout();
         actions.add(save, reset);
         save.getStyle().set("marginRight", "10px");
-//
-//        // Both phone and email cannot be empty
-//        SerializablePredicate<String> phoneOrEmailPredicate = value -> !phone
-//                .getValue().trim().isEmpty()
-//                || !email.getValue().trim().isEmpty();
-//
-//        // E-mail and phone have specific validators
-//        Binder.Binding<Product, String> emailBinding = binder.forField(price)
-//                .withNullRepresentation("")
-//                .withValidator(phoneOrEmailPredicate,
-//                        "Please specify your email")
-//                .withValidator(new EmailValidator("Incorrect email address"))
-//                .bind(Contact::getEmail, Contact::setEmail);
-//
-//        Binding<Contact, String> phoneBinding = binder.forField(description)
-//                .withValidator(phoneOrEmailPredicate,
-//                        "Please specify your phone")
-//                .bind(Contact::getPhone, Contact::setPhone);
-//
-//        // Trigger cross-field validation when the other field is changed
-//        price.addValueChangeListener(event -> phoneBinding.validate());
-//        description.addValueChangeListener(event -> emailBinding.validate());
-//
-        // Address is a required field
+
+
         name.setRequiredIndicatorVisible(true);
         binder.forField(name)
-                .withValidator(new StringLengthValidator(
-                        "Please add the address", 1, null))
+                .asRequired("Name is required")
                 .bind(Product::getName, Product::setName);
+
+        price.setRequiredIndicatorVisible(true);
+        binder.forField(price).asRequired("Price is required")
+                .bind(Product::getPrice, Product::setPrice);
+
+
+        description.setRequiredIndicatorVisible(true);
+        binder.forField(description).asRequired("Description is required")
+                .bind(Product::getDescription, Product::setDescription);
+
+        binder.forField(family).asRequired("Family is required")
+                .bind(Product::getFamily, Product::setFamily);
+
 
         // Click listeners for the buttons
         save.addClickListener(event -> {
 
             if (binder.writeBeanIfValid(productBeingEdited)) {
 
-                productBeingEdited.setWarehouse(warehouseSelect.getValue());
+                productBeingEdited.setWarehouse(warehouse.getValue());
+                productBeingEdited.setActive(checkboxActive.getValue());
 
                 infoLabel.setText("Saved bean values: " + productBeingEdited.toString());
 
-//                productService.save(productBeingEdited);
+                productService.save(productBeingEdited);
+                UI.getCurrent().getPage().reload();
 
             } else {
                 BinderValidationStatus<Product> validate = binder.validate();
@@ -263,10 +266,22 @@ public class ProductMasterView extends VerticalLayout {
 
 
 
-    private Button createUpdateButton() {
+    private Button createUpdateButton(Product product) {
 
         Button button = new Button("Update");
+        button.addClickListener(funcion ->{
+            System.out.println(product.toString());
+            Dialog dialog = formFlotanteProduct(product);
+            dialog.open();
+        });
+
+
+
+
+
+
         return button;
+
     }
 
     private Button createRemoveButton(Product product) {
