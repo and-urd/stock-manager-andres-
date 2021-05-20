@@ -109,4 +109,17 @@ public class Product extends AbstractEntity implements Cloneable {
 	public void setStocks(List<Stock> stocks) {
 		this.stocks = stocks;
 	}
+
+
+	@Override
+	public String toString() {
+		return "Product{" +
+				"warehouse_name=" + warehouse.getName() +
+				", name='" + name + '\'' +
+				", description='" + description + '\'' +
+				", family=" + family +
+				", price=" + price +
+				", active=" + active +
+				'}';
+	}
 }

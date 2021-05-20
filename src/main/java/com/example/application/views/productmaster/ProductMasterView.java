@@ -64,7 +64,6 @@ public class ProductMasterView extends VerticalLayout {
                 )
         ).setHeader("Active").setKey("Active");
 
-
         grid.addComponentColumn(item -> createUpdateButton()).setHeader("");
 
         grid.addComponentColumn(product -> createRemoveButton(product)).setHeader("");
@@ -75,12 +74,6 @@ public class ProductMasterView extends VerticalLayout {
 
 
     }
-
-
-
-
-
-
 
 
     private Button createUpdateButton() {
@@ -97,26 +90,24 @@ public class ProductMasterView extends VerticalLayout {
             System.out.println("Pulsado botón Remove , product:" + product.getName());
             List<Stock> listadoStock = product.getStocks();
 
+            // Borro los Stocks asociados al producto
             for (Stock elementoStock :
                     listadoStock) {
                 stockService.delete(elementoStock);
             }
+            // Dejo el producto sin stock
             product.setStocks(null);
 
+            // Finalmente borro el producto
             productService.delete(product);
+
+            // Refresca la página
+            UI.getCurrent().getPage().reload();
 
         });
 
         return button;
     }
-
-
-
-
-
-
-
-
 
     private HorizontalLayout CreaLayoutHorizBotones() {
         // Creo LayoutHorizontal
@@ -128,6 +119,7 @@ public class ProductMasterView extends VerticalLayout {
 
         Button buttonRefreshStock = new Button("Refresh Stock");
         buttonRefreshStock.addClickListener(funcion ->{
+            // Refresca la página
             UI.getCurrent().getPage().reload();
         });
 
